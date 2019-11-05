@@ -22,6 +22,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	
 	HWND hwnd;
 	MSG msg;
+	int width = 600;
+	int height = 400;
 
 	const char windowName[] = "First window";
 
@@ -50,8 +52,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		600,
-		400,
+		width,
+		height,
 		NULL,
 		NULL,
 		hInstance,
@@ -81,7 +83,39 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	};
 	Microsoft::WRL::ComPtr<ID3D11Device> device = NULL;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context = NULL;
-	HRESULT hr = D3D11CreateDevice(
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain = NULL;
+
+	//4x msaa quality
+	//UINT msaaQuality4x = 0;
+	//device->CheckMultisampleQualityLevels(
+	//	DXGI_FORMAT_R8G8B8A8_UNORM, 4, &msaaQuality4x
+	//);
+	//if (msaaQuality4x <= 0) {
+	//	OutputDebugString("multisampling failed");
+	//	exit(-1);
+	//}
+
+	//create swapchain
+	DXGI_SWAP_CHAIN_DESC cd;
+	cd.BufferDesc.Width = width;
+	cd.BufferDesc.Height = height;
+	cd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	cd.BufferDesc.RefreshRate.Numerator = 60;
+	cd.BufferDesc.RefreshRate.Denominator = 1;
+	cd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+	cd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+	cd.SampleDesc.Count = 1;
+	cd.SampleDesc.Quality = 0;
+	
+
+	cd.BufferCount = 1;
+	cd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	cd.OutputWindow = hwnd;
+	cd.Windowed = true;
+	cd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	cd.Flags = 0;
+
+	HRESULT hr = D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
@@ -89,14 +123,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		featureLevels,
 		ARRAYSIZE(featureLevels),
 		D3D11_SDK_VERSION,
-		&device,
-		nullptr,
-		&context
+		&cd,
+		swapChain.GetAddressOf(),
+		device.GetAddressOf(),
+		NULL,
+		context.GetAddressOf()
 	);
 	if (FAILED(hr)) {
-		OutputDebugString("create device failed");
+		OutputDebugString("create device and swapchain failed");
 		exit(-1);
 	}
+
+	//render target view
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+	swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
+	device->CreateRenderTargetView(backBuffer.Get(), 0, renderTargetView.GetAddressOf());
+
 
 	// Render window
 	ShowWindow(hwnd, SW_SHOW);
