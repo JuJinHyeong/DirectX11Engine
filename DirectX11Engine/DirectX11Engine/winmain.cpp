@@ -4,63 +4,13 @@
 #include<DirectXMath.h>
 #include<wrl/client.h>
 
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-	switch (msg) {
-	case WM_CLOSE:
-		PostQuitMessage(0);
-		break;
-	case WM_QUIT:
-		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hwnd, msg, wParam, lParam);
-	}
-	return 0;
-}
+#include "RenderWindow.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
-	
-	HWND hwnd;
-	MSG msg;
-	int width = 600;
-	int height = 400;
 
-	const char windowName[] = "First window";
-
-	// Initialize
-	WNDCLASSEX wcex = { 0 };
-	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_VREDRAW | CS_HREDRAW;
-	wcex.lpfnWndProc = WindowProc;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground = WHITE_BRUSH;
-	wcex.lpszClassName = windowName;
-	wcex.lpszMenuName = NULL;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	if (!RegisterClassEx(&wcex)) {
-		OutputDebugString("Register class failed");
-		exit(-1);
-	}
-
-	// create window
-	hwnd = CreateWindowEx(0,
-		windowName,
-		windowName,
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		width,
-		height,
-		NULL,
-		NULL,
-		hInstance,
-		NULL
-	);
-	if (hwnd == NULL) {
-		OutputDebugString("create window failed");
+	RenderWindow renderWindow;
+	if (!renderWindow.Initialize(hInstance, "WindowTitle", "WindowClass", 600, 400)) {
+		OutputDebugString("window init failed");
 		exit(-1);
 	}
 
@@ -97,8 +47,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	//create swapchain
 	DXGI_SWAP_CHAIN_DESC cd;
-	cd.BufferDesc.Width = width;
-	cd.BufferDesc.Height = height;
+	cd.BufferDesc.Width = renderWindow.windowWidth;
+	cd.BufferDesc.Height = renderWindow.windowHeight;
 	cd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	cd.BufferDesc.RefreshRate.Numerator = 60;
 	cd.BufferDesc.RefreshRate.Denominator = 1;
@@ -110,7 +60,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	cd.BufferCount = 1;
 	cd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	cd.OutputWindow = hwnd;
+	cd.OutputWindow = renderWindow.hwnd;
 	cd.Windowed = true;
 	cd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	cd.Flags = 0;
@@ -142,8 +92,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	device->CreateRenderTargetView(backBuffer.Get(), 0, renderTargetView.GetAddressOf());
 
 	D3D11_TEXTURE2D_DESC depthStencilDesc;
-	depthStencilDesc.Width = width;
-	depthStencilDesc.Height = height;
+	depthStencilDesc.Width = renderWindow.windowWidth;
+	depthStencilDesc.Height = renderWindow.windowHeight;
 	depthStencilDesc.MipLevels = 1;
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -174,18 +124,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	D3D11_VIEWPORT viewPort;
 	viewPort.TopLeftX = 0.0f;
 	viewPort.TopLeftY = 0.0f;
-	viewPort.Width = width;
-	viewPort.Height = height;
+	viewPort.Width = renderWindow.windowWidth;
+	viewPort.Height = renderWindow.windowHeight;
 	viewPort.MinDepth = 0.0f;
 	viewPort.MaxDepth = 1.0f;
 
 	context->RSSetViewports(1, &viewPort);
 
-	// Render window
-	ShowWindow(hwnd, SW_SHOW);
-	SetFocus(hwnd);
-	SetForegroundWindow(hwnd);
-
+	MSG msg;
 	// Update
 	while (GetMessage(&msg, NULL, 0, 0)) {
 		swapChain->Present(0, 0);
