@@ -135,11 +135,51 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//render target view
+
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
 	swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
 	device->CreateRenderTargetView(backBuffer.Get(), 0, renderTargetView.GetAddressOf());
 
+	D3D11_TEXTURE2D_DESC depthStencilDesc;
+	depthStencilDesc.Width = width;
+	depthStencilDesc.Height = height;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.ArraySize = 1;
+	depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	depthStencilDesc.SampleDesc.Count = 1;
+	depthStencilDesc.SampleDesc.Quality = 0;
+
+	depthStencilDesc.Usage = D3D11_USAGE_DEFAULT;
+	depthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+	depthStencilDesc.CPUAccessFlags = 0;
+	depthStencilDesc.MiscFlags = 0;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> depthStencilBuffer;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView;
+
+	hr = device->CreateTexture2D(&depthStencilDesc, 0, depthStencilBuffer.GetAddressOf());
+	if (FAILED(hr)) {
+		OutputDebugString("create depth stencil buffer failed");
+		exit(-1);
+	}
+
+	hr = device->CreateDepthStencilView(depthStencilBuffer.Get(), 0, depthStencilView.GetAddressOf());
+	if (FAILED(hr)) {
+		OutputDebugString("create depth stencil veiw failed");
+		exit(-1);
+	}
+	
+	D3D11_VIEWPORT viewPort;
+	viewPort.TopLeftX = 0.0f;
+	viewPort.TopLeftY = 0.0f;
+	viewPort.Width = width;
+	viewPort.Height = height;
+	viewPort.MinDepth = 0.0f;
+	viewPort.MaxDepth = 1.0f;
+
+	context->RSSetViewports(1, &viewPort);
 
 	// Render window
 	ShowWindow(hwnd, SW_SHOW);
@@ -148,8 +188,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	// Update
 	while (GetMessage(&msg, NULL, 0, 0)) {
-
-
+		swapChain->Present(0, 0);
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
