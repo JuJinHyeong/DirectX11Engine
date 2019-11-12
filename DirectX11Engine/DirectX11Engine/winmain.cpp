@@ -4,9 +4,22 @@
 #include<DirectXMath.h>
 #include<wrl/client.h>
 
-#include "RenderWindow.h"
+#include "Engine.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
+
+
+	Engine engine;
+	if (!engine.Initialize(hInstance, "WindowTitle", "WindowClass", 600, 400)) {
+		OutputDebugString("engine init failed");
+		exit(-1);
+	}
+
+	while (engine.ProcessMessage()) {
+		engine.Update();
+	}
+
+	return 0;
 
 	RenderWindow renderWindow;
 	if (!renderWindow.Initialize(hInstance, "WindowTitle", "WindowClass", 600, 400)) {
@@ -85,7 +98,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	}
 
 	//render target view
-
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
 	swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(backBuffer.GetAddressOf()));
@@ -138,6 +150,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
 
 	return 0;
 }

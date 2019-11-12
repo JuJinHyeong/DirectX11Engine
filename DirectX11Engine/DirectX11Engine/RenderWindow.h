@@ -15,5 +15,6 @@ public:
 
 	bool Initialize(HINSTANCE hInstance, const std::string& windowTitle, const std::string& windowClass, int width, int height);
 	bool RegisterWindow();
+	bool ProcessMessage();
 	
 };

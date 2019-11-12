@@ -11,3 +11,4 @@ LRESULT CALLBACK WindowContainer::WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
 	}
 	return 0;
 }
+
