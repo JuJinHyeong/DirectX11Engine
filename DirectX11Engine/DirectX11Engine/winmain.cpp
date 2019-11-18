@@ -8,7 +8,6 @@
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 
-
 	Engine engine;
 	if (!engine.Initialize(hInstance, "WindowTitle", "WindowClass", 600, 400)) {
 		OutputDebugString("engine init failed");
@@ -17,6 +16,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	while (engine.ProcessMessage()) {
 		engine.Update();
+		engine.RenderFrame();
 	}
 
 	return 0;

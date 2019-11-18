@@ -15,7 +15,12 @@ bool Engine::Initialize(HINSTANCE hInstance, const std::string& windowTitle, con
 
 void Engine::Update()
 {
-	gfx.Update();
+	//handling window
+}
+
+void Engine::RenderFrame()
+{
+	gfx.RenderFrame();
 }
 
 bool Engine::ProcessMessage()
