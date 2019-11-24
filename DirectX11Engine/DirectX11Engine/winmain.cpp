@@ -9,7 +9,7 @@
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 
 	Engine engine;
-	if (!engine.Initialize(hInstance, "WindowTitle", "WindowClass", 600, 400)) {
+	if (!engine.Initialize(hInstance, "WindowTitle", "WindowClass", 600, 600)) {
 		OutputDebugString("engine init failed");
 		exit(-1);
 	}

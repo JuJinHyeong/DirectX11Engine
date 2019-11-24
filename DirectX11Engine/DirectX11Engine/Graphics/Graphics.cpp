@@ -45,6 +45,24 @@ bool Graphics::InitializeDirectX()
 		D3D_FEATURE_LEVEL_9_1,
 	};
 
+	hr = D3D11CreateDevice(
+		m_adapters[0].pAdater, 
+		D3D_DRIVER_TYPE_UNKNOWN, 
+		nullptr, 
+		creationFlag, 
+		featureLevels, 
+		ARRAYSIZE(featureLevels), 
+		D3D11_SDK_VERSION, 
+		m_device.GetAddressOf(), 
+		nullptr, 
+		m_deviceContext.GetAddressOf()
+	);
+	
+	// m4xmsaaquality check
+	UINT maxQuality;
+	hr = m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_R8G8B8A8_UNORM, 4, &maxQuality);
+	HR(hr, "failed to get mulitysamplequailitylevels");
+
 	// swapchain desc
 	DXGI_SWAP_CHAIN_DESC cd;
 	cd.BufferDesc.Width = m_windowWidth;
@@ -54,8 +72,9 @@ bool Graphics::InitializeDirectX()
 	cd.BufferDesc.RefreshRate.Denominator = 1;
 	cd.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
 	cd.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-	cd.SampleDesc.Count = 1;
-	cd.SampleDesc.Quality = 0;
+	// multisampling
+	cd.SampleDesc.Count = 4;
+	cd.SampleDesc.Quality = maxQuality - 1;
 
 	cd.BufferCount = 1;
 	cd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -64,21 +83,16 @@ bool Graphics::InitializeDirectX()
 	cd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	cd.Flags = 0;
 
-	hr = D3D11CreateDeviceAndSwapChain(
-		m_adapters[0].pAdater,
-		D3D_DRIVER_TYPE_UNKNOWN,
-		nullptr,
-		creationFlag,
-		featureLevels,
-		ARRAYSIZE(featureLevels),
-		D3D11_SDK_VERSION,
+	Microsoft::WRL::ComPtr<IDXGIFactory> pFactory;
+	hr = CreateDXGIFactory(__uuidof(IDXGIFactory), reinterpret_cast<void**>(pFactory.GetAddressOf()));
+
+	hr = pFactory->CreateSwapChain(
+		m_device.Get(),
 		&cd,
-		m_swapChain.GetAddressOf(),
-		m_device.GetAddressOf(),
-		NULL,
-		m_deviceContext.GetAddressOf()
+		m_swapChain.GetAddressOf()
 	);
 	HR(hr, "create device and swapchain failed");
+
 
 	hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(m_backBuffer.GetAddressOf()));
 	HR(hr, "get buffer failed");
@@ -114,6 +128,12 @@ bool Graphics::InitializeDirectX()
 		exit(-1);
 	}
 
+	CD3D11_RASTERIZER_DESC rasterizerState(D3D11_DEFAULT);
+	hr = m_device->CreateRasterizerState(&rasterizerState, m_rasterizerState.GetAddressOf());
+	if (FAILED(hr)) {
+		OutputDebugString("create rasterizer state failed");
+		exit(-1);
+	}
 
 	//view port
 	D3D11_VIEWPORT viewPort;
@@ -134,7 +154,8 @@ bool Graphics::InitializeShader()
 	HRESULT hr;
 
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
-		{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{"POSITION", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"COLOR", 0, DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT, 0, 8, D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 	UINT numElements = ARRAYSIZE(layout);
 
@@ -157,9 +178,12 @@ bool Graphics::InitializeShader()
 bool Graphics::InitializeScene()
 {
 	Vertex vertices[] = {
-		Vertex(-0.5f, -0.5f),
-		Vertex(0.0f, 0.5f),
-		Vertex(0.5f, -0.5f)
+		Vertex(0.0f, 0.5f, 1.0f, 0.0f, 0.0f), // 0
+		Vertex(cos(DirectX::XM_PI / 6) * 0.5f, sin(DirectX::XM_PI / 6) * 0.5f, 1.0f, 0.0f, 1.0f), // 1
+		Vertex(cos(DirectX::XM_PI / 6) * 0.5f, -sin(DirectX::XM_PI / 6) * 0.5f, 0.0f, 0.0f, 1.0f), // 2
+		Vertex(0.0f, -0.5f, 0.0f, 1.0f, 1.0f), // 3
+		Vertex(-cos(DirectX::XM_PI / 6) * 0.5f, -sin(DirectX::XM_PI / 6) * 0.5f, 0.0f, 1.0f, 0.0f), // 4
+		Vertex(-cos(DirectX::XM_PI / 6) * 0.5f, sin(DirectX::XM_PI / 6) * 0.5f, 1.0f, 1.0f, 0.0f), // 5
 	};
 
 	D3D11_BUFFER_DESC vertexBufferDesc;
@@ -175,7 +199,30 @@ bool Graphics::InitializeScene()
 	HRESULT hr = m_device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, m_vertexBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
-		OutputDebugString("failed to create buffer");
+		OutputDebugString("failed to create vertex buffer");
+		exit(-1);
+	}
+
+	UINT indices[] = {
+		0, 1, 2,
+		0, 2, 3,
+		0, 3, 5,
+		5, 3, 4
+	};
+
+	D3D11_BUFFER_DESC indexBufferDesc = { 0 };
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(UINT) * ARRAYSIZE(indices);
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+
+	D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
+	indexBufferData.pSysMem = indices;
+	hr = m_device->CreateBuffer(&indexBufferDesc, &indexBufferData, m_indexBuffer.GetAddressOf());
+	if (FAILED(hr))
+	{
+		OutputDebugString("failed to create index buffer");
 		exit(-1);
 	}
 
@@ -189,17 +236,18 @@ void Graphics::RenderFrame()
 
 	m_deviceContext->IASetInputLayout(m_vertexShader.GetInputLayout());
 	m_deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+	
 	m_deviceContext->VSSetShader(m_vertexShader.GetVertexShader(), NULL, 0);
 	m_deviceContext->PSSetShader(m_pixelShader.GetPixelShader(), NULL, 0);
-
+	
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
 	m_deviceContext->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
-
+	m_deviceContext->IASetIndexBuffer(m_indexBuffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R32_UINT, 0);
+	
 	m_deviceContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-	m_deviceContext->Draw(3, 0);
+	m_deviceContext->DrawIndexed(12, 0, 0);
 
 	m_swapChain->Present(0, 0);
 }

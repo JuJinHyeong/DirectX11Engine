@@ -23,7 +23,9 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_backBuffer;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilBuffer;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_indexBuffer;
 
 	VertexShader m_vertexShader;
 	PixelShader m_pixelShader;
