@@ -1,6 +1,6 @@
 #include "Engine.h"
 
-bool Engine::Initialize(HINSTANCE hInstance, const std::string& windowTitle, const std::string& windowClass, int width, int height)
+bool Engine::Initialize(HINSTANCE hInstance, const std::string& windowTitle, const std::string& windowClass, float width, float height)
 {
 	if (!m_window.Initialize(hInstance, windowTitle, windowClass, width, height)) {
 		OutputDebugString("window init failed");

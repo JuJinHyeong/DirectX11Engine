@@ -1,19 +1,24 @@
+cbuffer perspective : register(b0)
+{
+    float4x4 mat;
+};
+
 struct VS_INPUT
 {
     float2 inPos : POSITION;
-    float3 inColor : COLOR;
+    float2 inTexCoord : TEXCOORD;
 };
 
 struct VS_OUTPUT
 {
-    float4 outPos : SV_POSITION;
-    float4 outColor : COLOR;
+    float4 outPosition : SV_POSITION;
+    float2 outTexCoord : TEXCOORD;
 };
 
 VS_OUTPUT main(VS_INPUT input)
 {
     VS_OUTPUT output;
-    output.outPos = float4(input.inPos, 0.0f, 1.0f);
-    output.outColor = float4(input.inColor, 1.0f);
+    output.outPosition = mul(float4(input.inPos, 0.0f, 1.0f), mat);
+    output.outTexCoord = input.inTexCoord;
     return output;
 }

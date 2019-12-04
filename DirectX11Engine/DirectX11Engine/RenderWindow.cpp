@@ -1,6 +1,6 @@
 #include "RenderWindow.h"
 
-bool RenderWindow::Initialize(HINSTANCE hInstance, const std::string& windowTitle, const std::string& windowClass, int width, int height)
+bool RenderWindow::Initialize(HINSTANCE hInstance, const std::string& windowTitle, const std::string& windowClass, float width, float height)
 {
 	m_hInstance = hInstance;
 	m_windowClass = windowClass;
@@ -18,8 +18,8 @@ bool RenderWindow::Initialize(HINSTANCE hInstance, const std::string& windowTitl
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		windowWidth,
-		windowHeight,
+		static_cast<int>(windowWidth),
+		static_cast<int>(windowHeight),
 		NULL,
 		NULL,
 		m_hInstance,
@@ -44,7 +44,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return DefWindowProc(hwnd, msg, wParam, lParam);
 	}
 	else {
-		windowContainer->WindowProc(hwnd, msg, wParam, lParam);
+		return windowContainer->WindowProc(hwnd, msg, wParam, lParam);
 	}
 }
 
@@ -68,6 +68,7 @@ bool RenderWindow::RegisterWindow()
 bool RenderWindow::ProcessMessage()
 {
 	MSG msg = { 0 };
+
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 		if (msg.message == WM_QUIT) {
 			return false;
