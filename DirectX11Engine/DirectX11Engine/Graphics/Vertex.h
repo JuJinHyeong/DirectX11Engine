@@ -1,11 +1,21 @@
 #pragma once
 #include <DirectXMath.h>
-class Vertex {
+
+class Vertex2D {
 public:
-	Vertex() : pos(0.0f, 0.0f), coord(0.0f, 0.0f), color(0.0f, 0.0f, 0.0f) {}
-	Vertex(float x, float y, float r, float g, float b) : pos(x, y), coord(0.0f, 0.0f), color(r, g, b) {}
-	Vertex(float x, float y, float u, float v) : pos(x, y), coord(u, v), color(0.0f, 0.0f, 0.0f) {}
-	DirectX::XMFLOAT2 pos;
+	Vertex2D() : pos(0.0f, 0.0f, 0.0f), coord(0.0f, 0.0f) {}
+	Vertex2D(float x, float y, float z, float u, float v)
+		: pos(x, y, z), coord(u, v){}
+	DirectX::XMFLOAT3 pos;
 	DirectX::XMFLOAT2 coord;
-	DirectX::XMFLOAT3 color;
+};
+
+class Vertex3D {
+public:
+	Vertex3D() : pos(0.0f, 0.0f, 0.0f), coord(0.0f, 0.0f), normal(0.0f, 0.0f, 0.0f) {}
+	Vertex3D(float x, float y, float z, float u, float v, float nx, float ny, float nz) 
+		: pos(x, y, z), coord(u, v), normal(nx, ny, nz) {}
+	DirectX::XMFLOAT3 pos;
+	DirectX::XMFLOAT2 coord;
+	DirectX::XMFLOAT3 normal;
 };

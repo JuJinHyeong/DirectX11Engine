@@ -1,15 +1,12 @@
 #include "Adapter.h"
 
-std::vector<AdapterData> AdapterReader::m_adapters;
+std::vector<AdapterData> AdapterReader::mAdapters;
 
 AdapterData::AdapterData(IDXGIAdapter* pAdapter)
 {
 	this->pAdater = pAdapter;
 	HRESULT hr = pAdapter->GetDesc(&description);
-	if (FAILED(hr)) {
-		OutputDebugString("Get Adatper description failed");
-		exit(-1);
-	}
+	HR(hr, "Get Adatper description failed");
 }
 
 std::vector<AdapterData> AdapterReader::GetAdapters()
@@ -20,8 +17,8 @@ std::vector<AdapterData> AdapterReader::GetAdapters()
 	IDXGIAdapter* pAdapter;
 	UINT idx = 0;
 	while (SUCCEEDED(pFactory->EnumAdapters(idx++, &pAdapter))) {
-		m_adapters.push_back(AdapterData(pAdapter));
+		mAdapters.push_back(AdapterData(pAdapter));
 	}
 
-	return m_adapters;
+	return mAdapters;
 }

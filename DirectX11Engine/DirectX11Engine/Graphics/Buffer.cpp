@@ -2,20 +2,20 @@
 
 ID3D11Buffer* Buffer::Get()
 {
-	return m_buffer.Get();
+	return mBuffer.Get();
 }
 
 ID3D11Buffer* const* Buffer::GetAddressOf()
 {
-	return m_buffer.GetAddressOf();
+	return mBuffer.GetAddressOf();
 }
 
 UINT Buffer::GetOffset()
 {
-	return m_offset;
+	return mOffset;
 }
 
 UINT* Buffer::GetOffsetPointer()
 {
-	return &m_offset;
+	return &mOffset;
 }

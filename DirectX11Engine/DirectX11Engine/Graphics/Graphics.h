@@ -1,6 +1,6 @@
 #pragma once
-#include<d3d11.h>
-#include<d3dcompiler.h>
+#include <d3d11.h>
+#include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <wrl/client.h>
 #include <WICTextureLoader.h>
@@ -13,46 +13,64 @@
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "ConstantBuffer.h"
-#include "VertexShaderConstantBuffer.h"
+#include "Camera3D.h"
+#include "Camera2D.h"
+#include "RenderableGameObject.h"
+#include "Light.h"
+#include "Sprite.h"
 
-#include "../RenderWindow.h"
-
-#define HR(hr, msg) {if(FAILED(hr)) {OutputDebugString(msg); exit(-1);}}
+#include "..//ErrorLogger.h"
+#include "..//RenderWindow.h"
 
 class Graphics {
-private:
-	std::vector<AdapterData> m_adapters;
-
-	Microsoft::WRL::ComPtr<ID3D11Device> m_device = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext = nullptr;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_backBuffer = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_depthStencilBuffer = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilView = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> m_depthStencilState = nullptr;
-	
-	Microsoft::WRL::ComPtr<ID3D11RasterizerState> m_rasterizerState = nullptr;
-
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> m_samplerState = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_texture = nullptr;
-
-	VertexBuffer<Vertex> m_vertexBuffer;
-	IndexBuffer m_indexBuffer;
-	ConstantBuffer<VertexShaderConstantBuffer> m_constantBuffer;
-
-	VertexShader m_vertexShader;
-	PixelShader m_pixelShader;
-
-	HWND m_hwnd = NULL;
-	float m_windowWidth = 0;
-	float m_windowHeight = 0;
-
 public:
+	Graphics() {}
+	Camera3D camera3D;
+	Camera2D camera2D;
+	RenderableGameObject gameObject;
+	Light light;
 	bool Initialize(HWND hwnd, float width, float height);
 	bool InitializeDirectX();
 	bool InitializeShader();
 	bool InitializeScene();
 	void RenderFrame();
+
+	ConstantBuffer<CB_PS_light> mCB_PS_light;
+
+private:
+	std::vector<AdapterData> mAdapters;
+
+	Microsoft::WRL::ComPtr<ID3D11Device> mDevice = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> mDeviceContext = nullptr;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> mRenderTargetView = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> mBackBuffer = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> mDepthStencilBuffer = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> mDepthStencilView = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> mDepthStencilState = nullptr;
+	
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> mRasterizerState = nullptr;
+
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> mSamplerState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mTexture = nullptr;
+
+	VertexBuffer<Vertex3D> mVertexBuffer;
+	IndexBuffer mIndexBuffer;
+	ConstantBuffer<CB_VS_matrix> mCB_VS_matrix;
+	ConstantBuffer<CB_VS_matrix2d> mCB_VS_matrix2d;
+
+	VertexShader mVertexShader;
+	PixelShader mPixelShader;
+	PixelShader mPixelShaderNoLight;
+
+	VertexShader mVertexShader2D;
+	PixelShader mPixelShader2D;
+
+	Sprite mSprite;
+
+	HWND mHwnd = NULL;
+	float mWindowWidth = 0;
+	float mWindowHeight = 0;
+
 };

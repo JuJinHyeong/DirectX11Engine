@@ -1,7 +1,9 @@
 #pragma once
-#include<d3d11.h>
-#include<wrl/client.h>
-#include<vector>
+#include <d3d11.h>
+#include <vector>
+#include <wrl/client.h>
+
+#include "..//ErrorLogger.h"
 
 class AdapterData {
 public:
@@ -14,5 +16,5 @@ class AdapterReader {
 public:
 	static std::vector<AdapterData> GetAdapters();
 private:
-	static std::vector<AdapterData> m_adapters;
+	static std::vector<AdapterData> mAdapters;
 };

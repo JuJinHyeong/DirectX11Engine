@@ -3,9 +3,6 @@
 
 template <class T>
 class ConstantBuffer : public Buffer {
-private:
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext = nullptr;
-
 public:
 	T data;
 
@@ -20,24 +17,22 @@ public:
 		desc.ByteWidth = static_cast<UINT>(sizeof(T) + (16 - (sizeof(T) % 16)));
 		desc.StructureByteStride = 0;
 
-		HRESULT hr = device->CreateBuffer(&desc, 0, m_buffer.GetAddressOf());
-		if (FAILED(hr)) {
-			OutputDebugString("failed to create constant buffer");
-			exit(-1);
-		}
+		HRESULT hr = device->CreateBuffer(&desc, 0, mBuffer.GetAddressOf());
+		HR(hr, "failed to create constant buffer");
 
 		return true;
 	}
 
 	bool ApplyChange() {
 		D3D11_MAPPED_SUBRESOURCE mappedResource = { 0 };
-		HRESULT hr = m_deviceContext->Map(m_buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-		if (FAILED(hr)) {
-			OutputDebugString("failed to mapping subresource data");
-			exit(-1);
-		}
+		HRESULT hr = m_deviceContext->Map(mBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+		HR(hr, "failed to mapping subresource data");
+
 		CopyMemory(mappedResource.pData, &data, sizeof(T));
-		m_deviceContext->Unmap(m_buffer.Get(), 0);
+		m_deviceContext->Unmap(mBuffer.Get(), 0);
 		return true;
 	}
+private:
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_deviceContext = nullptr;
+
 };

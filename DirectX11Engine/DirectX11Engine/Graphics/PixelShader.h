@@ -4,6 +4,8 @@
 #include <d3dcompiler.h>
 #include <string>
 
+#include "..//ErrorLogger.h"
+
 class PixelShader {
 public:
 	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::wstring& shaderpath);
@@ -11,6 +13,6 @@ public:
 	ID3D10Blob* GetShaderBuffer();
 
 private:
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
-	Microsoft::WRL::ComPtr<ID3D10Blob> m_shaderBuffer;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> mPixelShader;
+	Microsoft::WRL::ComPtr<ID3D10Blob> mShaderBuffer;
 };

@@ -4,6 +4,8 @@
 #include <d3dcompiler.h>
 #include <string>
 
+#include "..//ErrorLogger.h"
+
 class VertexShader {
 public:
 	bool Initialize(Microsoft::WRL::ComPtr<ID3D11Device>& device, std::wstring& shaderpath, D3D11_INPUT_ELEMENT_DESC* layoutDesc, UINT numElements);
@@ -12,7 +14,7 @@ public:
 	ID3D11InputLayout* GetInputLayout();
 
 private:
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
-	Microsoft::WRL::ComPtr<ID3D10Blob> m_shaderBuffer;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> mVertexShader;
+	Microsoft::WRL::ComPtr<ID3D10Blob> mShaderBuffer;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> mInputLayout;
 };
